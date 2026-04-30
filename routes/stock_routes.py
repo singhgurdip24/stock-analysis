@@ -1,6 +1,7 @@
-from fastapi import APIRouter
-from models.stockModels import StockInput, StockResponse
+from fastapi import APIRouter, HTTPException
+from models.stockModels import StockInput, StockResponse, StockSignals
 from services.analyse_service import simple_sentiment, investment_decision
+from services.analyse_claude import analyse_with_claude
 from services.fetch_signals_alpha import fetch_news_sentiment_alpha
 from services.fetch_signals_yfinance import get_stock_signals, get_three_month_price_history
 
@@ -34,6 +35,18 @@ def fetch_alpha_signals(stock_symbol: str):
 def fetch_yahoo_signals(stock_symbol: str):
     return get_stock_signals(stock_symbol)
 
-@router.get("/fetch/yahoo/history/{stock_symbol}")
+@router.get("/fetch/yahoo/history/{stock_symbol}", response_model=StockSignals)
 def fetch_three_month_price_history(stock_symbol: str):
-    return get_three_month_price_history(stock_symbol)
+    try:
+        return get_three_month_price_history(stock_symbol)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/analyse/claude/{stock_symbol}")
+def analyse_stock_claude(stock_symbol: str):
+    try:
+        signals = get_three_month_price_history(stock_symbol)
+        return analyse_with_claude(signals)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+

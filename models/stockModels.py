@@ -6,3 +6,8 @@ class StockInput(BaseModel):
 class StockResponse(BaseModel):
     sentiment: str
     decision: str
+
+class StockSignals(BaseModel):
+    trend: str
+    rsi: float
+    rsi_signal: str
