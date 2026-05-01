@@ -1,8 +1,6 @@
-import time
 import pandas as pd
 import numpy as np
 import yfinance as yf
-from yfinance.exceptions import YFRateLimitError
 from models.stockModels import StockSignals
 
 STUB = True  # set to False to use real yfinance data
@@ -22,32 +20,18 @@ def _stub_download(stock_symbol: str, period: str) -> pd.DataFrame:
     df.columns = pd.MultiIndex.from_tuples(df.columns, names=['Price', 'Ticker'])
     return df
 
-def get_stock_signals(stock_symbol: str, retries: int = 3, delay: float = 5.0):
+def get_stock_signals(stock_symbol: str):
     ticker = yf.Ticker(stock_symbol)
-    for attempt in range(retries):
-        try:
-            news = ticker.news
-            print(f"Fetched news for {stock_symbol}: {news}")
-            return news
-        except YFRateLimitError:
-            if attempt == retries - 1:
-                raise
-            asyncio.sleep(delay * (attempt + 1))
-
-def _download_with_retry(stock_symbol: str, retries: int = 3, delay: float = 5.0) -> pd.DataFrame:
-    for attempt in range(retries):
-        try:
-            df = yf.download(stock_symbol, period="3mo", progress=False, auto_adjust=False)
-            if not df.empty:
-                return df
-        except YFRateLimitError:
-            if attempt == retries - 1:
-                raise
-        time.sleep(delay * (attempt + 1))
-    return pd.DataFrame()
+    news = ticker.news
+    print(f"Fetched news for {stock_symbol}: {news}")
+    return news
 
 def get_three_month_price_history(stock_symbol: str):
-    df = _stub_download(stock_symbol, period="3mo") if STUB else _download_with_retry(stock_symbol)
+    if STUB:
+        df = _stub_download(stock_symbol, period="3mo")
+    else:
+        df = yf.download(stock_symbol, period="3mo", progress=False, auto_adjust=False)
+
     if df.empty:
         raise ValueError(f"No data found for symbol: {stock_symbol}")
     if isinstance(df.columns, pd.MultiIndex):
@@ -55,16 +39,28 @@ def get_three_month_price_history(stock_symbol: str):
     df['ma20'] = df['Close'].rolling(window=20).mean().round(2)
     df['ma50'] = df['Close'].rolling(window=50).mean().round(2)
 
-    x = df.iloc[-1]
-
     df['trend'] = df.apply(get_trend, axis=1)
     df['rsi'] = calc_rsi_series(df['Close'])
     df['rsi_signal'] = df['rsi'].apply(interpret_rsi)
     rsi_signal = df['rsi_signal'].iloc[-1]
     rsi = round(float(df['rsi'].iloc[-1]), 2)
     trend = df['trend'].iloc[-1]
+    technical_confidence = compute_confidence(trend,rsi)
 
-    return StockSignals(trend=trend, rsi = rsi, rsi_signal = rsi_signal )
+    return StockSignals(trend=trend, rsi=rsi, rsi_signal=rsi_signal, technical_confidence=technical_confidence)
+
+def compute_confidence(trend, rsi):
+    score = 0.5
+
+    if trend == "bullish":
+        score += 0.2
+    else:
+        score -= 0.2
+
+    if rsi > 70 or rsi < 30:
+        score -= 0.1  # risky zone
+
+    return max(0, min(score, 1))
 
 def get_trend(x):
     ma20 = x['ma20']
@@ -75,7 +71,7 @@ def get_trend(x):
         return "bearish"
     else:
         return "sideways"
-    
+
 def calc_rsi_series(close: pd.Series) -> pd.Series:
     delta = close.diff()
     gain = delta.clip(lower=0)

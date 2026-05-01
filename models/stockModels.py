@@ -11,3 +11,4 @@ class StockSignals(BaseModel):
     trend: str
     rsi: float
     rsi_signal: str
+    technical_confidence: float
