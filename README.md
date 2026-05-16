@@ -105,6 +105,15 @@ The API will be available at `http://127.0.0.1:8000`. Interactive docs at `http:
 
 ## API Endpoints
 
+<!-- ENDPOINT_INDEX_START -->
+| Method | Path | Handler |
+|--------|------|---------|
+| `GET` | `/fetch/alpha/{stock_symbol}` | `fetch_alpha_signals` |
+| `GET` | `/fetch/yahoo/history/{stock_symbol}` | `fetch_three_month_price_history` |
+| `GET` | `/analyse/agent/{ticker}` | `analyse_stock_agent` |
+<!-- ENDPOINT_INDEX_END -->
+
+
 ### `GET /analyse/agent/{ticker}`
 
 **The primary endpoint.** Runs the multi-agent analysis pipeline and returns a structured investment outlook.
