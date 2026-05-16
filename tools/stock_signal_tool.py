@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from services.fetch_signals_yfinance import get_three_month_price_history
+from services.fetch_signals_alpha import get_three_month_price_history
 
 @tool
 def stock_signal_tool(ticker: str) -> dict:

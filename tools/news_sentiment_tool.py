@@ -1,7 +1,7 @@
-import yfinance as yf
 from langchain.tools import tool
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
+from services.fetch_signals_alpha import fetch_news_sentiment_alpha
 
 llm = ChatAnthropic(model="claude-opus-4-7")
 
@@ -11,13 +11,13 @@ def news_sentiment_tool(ticker: str) -> dict:
     Analyze recent news sentiment for a stock using Claude.
     Use when user asks about market sentiment or recent developments.
     """
-    stock = yf.Ticker(ticker)
-    news = stock.news
+    data = fetch_news_sentiment_alpha(ticker)
+    news = data.get('feed', [])
 
     if not news:
         return {"sentiment": "neutral", "headlines": []}
 
-    headlines = [item['content']['title'] for item in news[:5]]
+    headlines = [item['title'] for item in news[:5]]
     headlines_text = "\n".join(f"- {h}" for h in headlines)
 
     response = llm.invoke([

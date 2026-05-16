@@ -1,5 +1,11 @@
 from langchain.tools import tool
-import yfinance as yf
+from services.fetch_signals_alpha import fetch_company_overview
+
+def _to_float(val):
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return None
 
 @tool
 def fundamentals_tool(ticker: str) -> dict:
@@ -7,13 +13,12 @@ def fundamentals_tool(ticker: str) -> dict:
     Analyze company fundamentals like valuation and growth.
     Use when user asks about long-term investment or company health.
     """
-    stock = yf.Ticker(ticker)
-    info = stock.info
+    info = fetch_company_overview(ticker)
 
-    pe_ratio       = info.get("trailingPE")
-    revenue_growth = info.get("revenueGrowth")
-    profit_margin  = info.get("profitMargins")
-    debt_to_equity = info.get("debtToEquity")
+    pe_ratio       = _to_float(info.get("PERatio"))
+    revenue_growth = _to_float(info.get("QuarterlyRevenueGrowthYOY"))
+    profit_margin  = _to_float(info.get("ProfitMargin"))
+    debt_to_equity = _to_float(info.get("DebtToEquityRatio"))
 
     score = compute_fundamental_score(pe_ratio, revenue_growth, profit_margin, debt_to_equity)
 

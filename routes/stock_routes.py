@@ -1,9 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from models.stockModels import StockInput, StockResponse, StockSignals
-from services.analyse_service import simple_sentiment, investment_decision
+from models.stockModels import StockSignals
 from services.analyse_claude import analyse_with_claude
-from services.fetch_signals_alpha import fetch_news_sentiment_alpha
-from services.fetch_signals_yfinance import get_three_month_price_history
+from services.fetch_signals_alpha import fetch_news_sentiment_alpha, get_three_month_price_history
 from agents.stock_analysis_agent import agent
 from models.schema import parser, format_instructions
 
@@ -32,7 +30,7 @@ def analyse_stock_claude(stock_symbol: str):
 @router.get("/analyse/agent/{ticker}")
 def analyse_stock_agent(ticker: str):
     query = f"""Analyze {ticker} stock.
-    
+
     Give:
     - short term outlook
     - medium term outlook
@@ -51,8 +49,11 @@ def analyse_stock_agent(ticker: str):
     {format_instructions}
     """
 
-    result = agent.run(query)
-    
-    parsed = parser.parse(result)
-
-    return parsed
+    try:
+        result = agent.run(query)
+        parsed = parser.parse(result)
+        return parsed
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Analysis failed: {str(e)}")
