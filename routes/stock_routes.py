@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from models.stockModels import StockSignals
+from models.stockModels import StockInput, StockResponse, StockSignals
+from services.analyse_service import simple_sentiment, investment_decision
 from services.analyse_claude import analyse_with_claude
-from services.fetch_signals_alpha import fetch_news_sentiment_alpha, get_three_month_price_history
-from agents.stock_analysis_agent import agent
+from agents.multiagent import multiagent
 from models.schema import parser, format_instructions
 
 router = APIRouter()
@@ -19,18 +19,10 @@ def fetch_three_month_price_history(stock_symbol: str):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/analyse/claude/{stock_symbol}")
-def analyse_stock_claude(stock_symbol: str):
-    try:
-        signals = get_three_month_price_history(stock_symbol)
-        return analyse_with_claude(signals)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
 @router.get("/analyse/agent/{ticker}")
 def analyse_stock_agent(ticker: str):
     query = f"""Analyze {ticker} stock.
-
+    
     Give:
     - short term outlook
     - medium term outlook
@@ -50,7 +42,7 @@ def analyse_stock_agent(ticker: str):
     """
 
     try:
-        result = agent.run(query)
+        result = multiagent.run(query)
         parsed = parser.parse(result)
         return parsed
     except ValueError as e:
