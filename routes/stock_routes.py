@@ -11,14 +11,6 @@ router = APIRouter()
 def fetch_alpha_signals(stock_symbol: str):
     return fetch_news_sentiment_alpha(tickers=stock_symbol)
 
-
-@router.get("/fetch/yahoo/history/{stock_symbol}", response_model=StockSignals)
-def fetch_three_month_price_history(stock_symbol: str):
-    try:
-        return get_three_month_price_history(stock_symbol)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
 @router.get("/analyse/agent/{ticker}")
 def analyse_stock_agent(ticker: str):
     query = f"""Analyze {ticker} stock.
