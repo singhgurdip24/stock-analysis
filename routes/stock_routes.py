@@ -12,11 +12,20 @@ def fetch_alpha_signals(stock_symbol: str):
     return fetch_news_sentiment_alpha(tickers=stock_symbol)
 
 @router.get("/predictions")
-def get_predictions():
-
+def get_predictions(page: int = 1, page_size: int = 20):
+    offset = (page - 1) * page_size
     db = SessionLocal()
-    predictions = db.query(Prediction).all()
-    return predictions
+    try:
+        total = db.query(Prediction).count()
+        predictions = db.query(Prediction).offset(offset).limit(page_size).all()
+        return {
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "results": predictions,
+        }
+    finally:
+        db.close()
 
 @router.get("/analyse/agent/{ticker}")
 def analyse_stock_agent(ticker: str):
