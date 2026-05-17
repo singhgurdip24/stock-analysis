@@ -101,8 +101,9 @@ def get_three_month_price_history(stock_symbol: str):
     rsi = round(float(df['rsi'].iloc[-1]), 2)
     trend = df['trend'].iloc[-1]
     technical_confidence = compute_confidence(trend, rsi)
+    current_price = round(float(df['Close'].iloc[-1]), 2)
 
-    return StockSignals(trend=trend, rsi=rsi, rsi_signal=rsi_signal, technical_confidence=technical_confidence)
+    return StockSignals(trend=trend, rsi=rsi, rsi_signal=rsi_signal, technical_confidence=technical_confidence, current_price=current_price)
 
 def compute_confidence(trend, rsi):
     score = 0.5

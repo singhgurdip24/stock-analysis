@@ -12,3 +12,4 @@ class StockSignals(BaseModel):
     rsi: float
     rsi_signal: str
     technical_confidence: float
+    current_price: float

@@ -9,7 +9,8 @@ response_schemas = [
     ResponseSchema(name="risks", description="list of risks"),
     ResponseSchema(name="uncertainties", description="list of uncertainties"),
     ResponseSchema(name="assumptions", description="list of assumptions"),
-    ResponseSchema(name="analysis", description="Entire Analysis Text")
+    ResponseSchema(name="analysis", description="Entire Analysis Text"),
+    ResponseSchema(name="current_price", description="Current Price")
 ]
 
 parser = StructuredOutputParser.from_response_schemas(response_schemas)
