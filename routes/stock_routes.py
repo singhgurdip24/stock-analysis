@@ -1,7 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from models.stockModels import StockInput, StockResponse, StockSignals
-from services.analyse_service import simple_sentiment, investment_decision
-from services.analyse_claude import analyse_with_claude
 from agents.multiagent import multiagent
 from models.schema import parser, format_instructions
 
@@ -10,6 +7,10 @@ router = APIRouter()
 @router.get("/fetch/alpha/{stock_symbol}")
 def fetch_alpha_signals(stock_symbol: str):
     return fetch_news_sentiment_alpha(tickers=stock_symbol)
+
+@router.get("/fetch/test-hook/{stock_symbol}")
+def fetch_alpha_signals(stock_symbol: str):
+    return "Hook Test"
 
 @router.get("/analyse/agent/{ticker}")
 def analyse_stock_agent(ticker: str):

@@ -22,6 +22,7 @@ build/
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # macOS
 .DS_Store
