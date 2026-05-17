@@ -21,8 +21,14 @@ def fetch_company_overview(symbol: str, apikey: str = _API_KEY) -> dict:
     r = requests.get(BASE_URL, params=params)
     r.raise_for_status()
     data = r.json()
-    if not data or 'Symbol' not in data:
-        raise ValueError(data.get('Error Message') or data.get('Note') or data.get('Information') or f"No overview data for {symbol}")
+    if not data:
+        raise ValueError(f"Empty response from Alpha Vantage for {symbol}")
+    if 'Information' in data or 'Note' in data:
+        raise ValueError("Alpha Vantage rate limit reached (25 requests/day on free tier). Try again tomorrow.")
+    if 'Error Message' in data:
+        raise ValueError(f"Alpha Vantage rejected ticker '{symbol}': {data['Error Message']}")
+    if 'Symbol' not in data:
+        raise ValueError(f"No fundamental data for '{symbol}' — it may be an ETF or unsupported ticker (Alpha Vantage OVERVIEW only supports individual stocks)")
     return data
 
 def fetch_news_sentiment_alpha(tickers: str, apikey: str = _API_KEY, **kwargs) -> dict:
