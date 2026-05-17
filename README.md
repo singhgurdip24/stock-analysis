@@ -109,7 +109,6 @@ The API will be available at `http://127.0.0.1:8000`. Interactive docs at `http:
 | Method | Path | Handler |
 |--------|------|---------|
 | `GET` | `/fetch/alpha/{stock_symbol}` | `fetch_alpha_signals` |
-| `GET` | `/fetch/test-hook/{stock_symbol}` | `fetch_alpha_signals` |
 | `GET` | `/analyse/agent/{ticker}` | `analyse_stock_agent` |
 <!-- ENDPOINT_INDEX_END -->
 
