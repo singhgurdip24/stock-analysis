@@ -12,6 +12,21 @@ if not _API_KEY:
     raise EnvironmentError("ALPHA_VANTAGE_API_KEY is not set. Add it to your .env file.")
 BASE_URL = 'https://www.alphavantage.co/query'
 
+def get_current_price(symbol: str) -> float:
+    params = {
+        'function': 'GLOBAL_QUOTE',
+        'symbol':   symbol,
+        'apikey':   _API_KEY,
+    }
+    r = requests.get(BASE_URL, params=params)
+    r.raise_for_status()
+    data = r.json()
+    quote = data.get('Global Quote', {})
+    price = quote.get('05. price')
+    if not price:
+        raise ValueError(f"No current price available for '{symbol}'")
+    return round(float(price), 2)
+
 def fetch_company_overview(symbol: str, apikey: str = _API_KEY) -> dict:
     params = {
         'function': 'OVERVIEW',

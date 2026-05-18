@@ -1,8 +1,18 @@
 import uvicorn
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routes.stock_routes import router
+from jobs.evaluate_predictions import scheduler
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.start()
+    yield
+    scheduler.shutdown()
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(router)
 
 if __name__ == "__main__":

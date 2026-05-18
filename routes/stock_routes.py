@@ -2,10 +2,19 @@ from fastapi import APIRouter, HTTPException
 from agents.multiagent import multiagent
 from models.schema import parser, format_instructions
 from services.fetch_signals_alpha import fetch_news_sentiment_alpha
+from services.evaluate_prediction import evaluate_all_predictions
 from database import SessionLocal
 from models.prediction import Prediction
 
 router = APIRouter()
+
+@router.post("/admin/evaluate")
+def trigger_evaluate():
+    try:
+        evaluate_all_predictions()
+        return {"status": "ok", "message": "Evaluation complete"}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 @router.get("/fetch/alpha/{stock_symbol}")
 def fetch_alpha_signals(stock_symbol: str):
